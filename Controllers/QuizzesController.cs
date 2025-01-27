@@ -42,12 +42,7 @@ public class QuizzesController : ControllerBase
         if (submission == null)
         {
             return BadRequest();
-        }
-        Console.WriteLine($"Quiz Submission: {submission.QuizId}, User: {submission.UserId}, Email: {submission.Email}");
-    foreach (var answer in submission.Answers)
-    {
-        Console.WriteLine($"Question ID: {answer.QuestionId}, Answer IDs: {string.Join(", ", answer.AnswerIds)}");
-    }        
+        }      
         var quiz = await _context.Quizzes
             .Include(q => q.Questions!)
             .ThenInclude(q => q.Answers!)
@@ -84,16 +79,16 @@ public class QuizzesController : ControllerBase
     private int CalculateScore(Quiz quiz, QuizSubmission submission)
     {
         int score = 0;
-        foreach (var question in quiz.Questions)
+        foreach (var question in quiz.Questions ?? Enumerable.Empty<Question>())
         {
             var submissionAnswer = submission.Answers!.FirstOrDefault(a => a.QuestionId == question.Id);
             if (submissionAnswer == null) continue;
 
             if (question.Type == "radio")
             {
-                var selectedAnswerId = submissionAnswer.AnswerIds.FirstOrDefault();
+                var selectedAnswerId = submissionAnswer.AnswerIds?.FirstOrDefault() ?? 0;
                 if (selectedAnswerId != 0){
-                    var selectedAnswer = question.Answers.FirstOrDefault(a => a.Id == selectedAnswerId);
+                    var selectedAnswer = question.Answers?.FirstOrDefault(a => a.Id == selectedAnswerId);
                 
                 if (selectedAnswer != null && selectedAnswer.IsCorrect)
                 {
@@ -110,7 +105,7 @@ public class QuizzesController : ControllerBase
             }
             else if (question.Type == "textbox")
             {
-                var correctAnswer = question.Answers.FirstOrDefault(a => a.IsCorrect)?.Text.Trim().ToLower();
+                var correctAnswer = question.Answers?.FirstOrDefault(a => a.IsCorrect)?.Text?.Trim().ToLower();
                 var userAnswer = submissionAnswer.Text?.Trim().ToLower();
                 if (correctAnswer == userAnswer)
                 {

@@ -9,7 +9,7 @@ namespace QuizApp.Models
         public int UserId { get; set; }
         public DateTime SubmissionDate { get; set; }
         public string? Email { get; set; }
-        public List<SubmissionAnswer> Answers { get; set; }
+        public List<SubmissionAnswer>? Answers { get; set; }
     }
 }
 
