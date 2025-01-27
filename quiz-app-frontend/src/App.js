@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import QuizPage from './pages/QuizPage';
+import QuizPage from './pages/QuizPage.tsx';
 import HighScoresPage from './pages/HighScoresPage'
 
 const App = () => {

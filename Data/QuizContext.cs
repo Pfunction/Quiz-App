@@ -19,7 +19,7 @@ namespace QuizApp.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Quiz>().HasData(
-                new Quiz { Id = 1, Title = "QuizMaster" }
+                new Quiz { Id = 1, Title = "Quiz Master" }
             );
 
             modelBuilder.Entity<Question>().HasData(
