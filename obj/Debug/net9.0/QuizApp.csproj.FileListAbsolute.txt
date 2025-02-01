@@ -35,9 +35,12 @@
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/obj/Debug/net9.0/QuizApp.pdb
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/obj/Debug/net9.0/QuizApp.genruntimeconfig.cache
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/obj/Debug/net9.0/ref/QuizApp.dll
+<<<<<<< Updated upstream
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/quiz-app-frontend/package-lock.json
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/quiz-app-frontend/package.json
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/quiz-app-frontend/public/manifest.json
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+=======
+>>>>>>> Stashed changes

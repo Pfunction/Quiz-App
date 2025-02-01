@@ -1,5 +1,3 @@
-
-
 namespace QuizApp.Models
 {
     public class QuizSubmission
@@ -8,19 +6,18 @@ namespace QuizApp.Models
         public int QuizId { get; set; }
         public int UserId { get; set; }
         public DateTime SubmissionDate { get; set; }
+<<<<<<< Updated upstream
         public string? Email { get; set; }
         public List<SubmissionAnswer> Answers { get; set; }
+=======
+        public required string Email { get; set; }
+        public List<SubmissionAnswer>? Answers { get; set; }
+
+
+        
+        //nav property
+        public Quiz? Quiz { get; set; }
+>>>>>>> Stashed changes
     }
 }
 
-namespace QuizApp.Models
-{
-    public class SubmissionAnswer
-    {
-        public int Id { get; set; }
-        public int QuizSubmissionId { get; set; }
-        public int QuestionId { get; set; }
-        public List<int> AnswerIds { get; set; } = new List<int>(); 
-        public string? Text { get; set; }
-    }
-}

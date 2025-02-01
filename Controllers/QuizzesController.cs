@@ -1,33 +1,22 @@
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuizApp.Data;
 using QuizApp.Models;
+using QuizApp.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class QuizzesController : ControllerBase
+namespace QuizApp.Controllers
 {
-    private readonly QuizContext _context;
-
-    public QuizzesController(QuizContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class QuizzesController : ControllerBase
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+        private readonly IQuizService _quizService;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Quiz>>> GetQuizzes()
-    {
-        return await _context.Quizzes
-            .Include(q => q.Questions!)
-            .ThenInclude(q => q.Answers!)
-            .ToListAsync();
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Quiz>> CreateQuiz(Quiz quiz)
-    {
-        if (quiz == null)
+        public QuizzesController(IQuizService quizService)
         {
+<<<<<<< Updated upstream
             return BadRequest();
         }
         _context.Quizzes.Add(quiz);
@@ -56,18 +45,19 @@ public class QuizzesController : ControllerBase
         if (quiz == null)
         {
             return NotFound();
+=======
+            _quizService = quizService ?? throw new ArgumentNullException(nameof(quizService));
+>>>>>>> Stashed changes
         }
 
-        int score = CalculateScore(quiz, submission);
-        var highScore = new Highscore
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Quiz>>> GetQuizzes()
         {
-            Email = submission.Email ?? string.Empty,
-            Score = score,
-            DateTime = DateTime.Now
-        };
-        _context.HighScores.Add(highScore);
-        await _context.SaveChangesAsync();
+            var quizzes = await _quizService.GetQuizzesAsync();
+            return Ok(quizzes);
+        }
 
+<<<<<<< Updated upstream
         return score;
     }
 
@@ -85,12 +75,26 @@ public class QuizzesController : ControllerBase
     {
         int score = 0;
         foreach (var question in quiz.Questions)
+=======
+        [HttpPost]
+        public async Task<ActionResult<Quiz>> CreateQuiz(Quiz quiz)
+>>>>>>> Stashed changes
         {
-            var submissionAnswer = submission.Answers!.FirstOrDefault(a => a.QuestionId == question.Id);
-            if (submissionAnswer == null) continue;
-
-            if (question.Type == "radio")
+            if (quiz == null)
             {
+                return BadRequest();
+            }
+
+            var createdQuiz = await _quizService.CreateQuizAsync(quiz);
+            return CreatedAtAction(nameof(GetQuizzes), new { id = createdQuiz.Id }, createdQuiz);
+        }
+
+        [HttpPost("submit")]
+        public async Task<ActionResult<int>> SubmitQuiz([FromBody] QuizSubmission submission)
+        {
+            if (submission == null)
+            {
+<<<<<<< Updated upstream
                 var selectedAnswerId = submissionAnswer.AnswerIds.FirstOrDefault();
                 if (selectedAnswerId != 0){
                     var selectedAnswer = question.Answers.FirstOrDefault(a => a.Id == selectedAnswerId);
@@ -101,15 +105,19 @@ public class QuizzesController : ControllerBase
                 }
                 }
                 
+=======
+                return BadRequest();
+>>>>>>> Stashed changes
             }
-            else if (question.Type == "checkbox")
+
+            try
             {
-                var correctAnswers = question.Answers!.Where(a => a.IsCorrect).Select(a => a.Id).ToList();
-                var selectedCorrectAnswers = submissionAnswer.AnswerIds!.Where(id => correctAnswers.Contains(id)).Count();
-                score += (int)Math.Ceiling(100.0 / correctAnswers.Count * selectedCorrectAnswers);
+                var score = await _quizService.SubmitQuizAsync(submission);
+                return Ok(score);
             }
-            else if (question.Type == "textbox")
+            catch (KeyNotFoundException ex)
             {
+<<<<<<< Updated upstream
                 var correctAnswer = question.Answers.FirstOrDefault(a => a.IsCorrect)?.Text.Trim().ToLower();
                 var userAnswer = submissionAnswer.Text?.Trim().ToLower();
                 if (correctAnswer == userAnswer)
@@ -117,9 +125,21 @@ public class QuizzesController : ControllerBase
                     score += 100;
                 }
                
+=======
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+>>>>>>> Stashed changes
             }
         }
-        return score;
+
+        [HttpGet("highscores")]
+        public async Task<ActionResult<IEnumerable<Highscore>>> GetHighScores()
+        {
+            var highScores = await _quizService.GetHighScoresAsync();
+            return Ok(highScores);
+        }
     }
-    
 }

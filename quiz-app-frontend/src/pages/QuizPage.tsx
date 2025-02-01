@@ -27,7 +27,7 @@ interface Answer {
 interface Question {
   id: number;
   text: string;
-  type: 'radio' | 'checkbox' | 'textbox';
+  type: 'Radio' | 'Checkbox' | 'Textbox';
   answers: Answer[];
 }
 
@@ -70,6 +70,7 @@ const QuizPage: React.FC = () => {
           headers: { 'Content-Type': 'application/json' } 
         });
 
+        console.log('Fetch Quiz Response:', response.data);
         if (response.data.length > 0) {
           setQuiz(response.data[0]);
         } else {
@@ -85,23 +86,35 @@ const QuizPage: React.FC = () => {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && currentPage < Math.ceil(quiz?.questions.length || 0)) {
-        if (currentPage < Math.ceil(quiz?.questions.length || 0) - 1) {
-          setCurrentPage(prev => prev + 1); 
+      if (e.key === 'Enter') {
+        e.preventDefault(); 
+  
+        if (currentPage === -1) {
+
+          if (email && isValidEmail(email)) {
+            setCurrentPage(0); 
+          }
         } else {
-          handleSubmit();  
+        
+          if (validateAnswer()) {
+            if (currentPage < Math.ceil(quiz?.questions.length || 0) - 1) {
+              setCurrentPage(prev => prev + 1);
+            } else {
+              handleSubmit();
+            }
+          } else {
+            alert('Please answer the question before proceeding.');
+          }
         }
       }
     };
-
-    
+  
     window.addEventListener('keydown', handleKeyPress);
-
-   
+  
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [currentPage, quiz]);
+  }, [currentPage, quiz, answers, email]); 
 
   const handleChange = (questionId: number, answer: string[]) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
@@ -110,15 +123,15 @@ const QuizPage: React.FC = () => {
   const validateAnswer = (): boolean => {
     const currentQuestion = quiz?.questions[currentPage];
     if (!currentQuestion) return false;
-
+  
     const currentAnswer = answers[currentQuestion.id];
-    if (currentQuestion.type === 'radio') {
+    if (currentQuestion.type === 'Radio') { 
       return currentAnswer && currentAnswer.length > 0;
     }
-    if (currentQuestion.type === 'checkbox') {
+    if (currentQuestion.type === 'Checkbox') { 
       return currentAnswer && currentAnswer.length > 0;
     }
-    if (currentQuestion.type === 'textbox') {
+    if (currentQuestion.type === 'Textbox') {
       return currentAnswer && currentAnswer[0].trim() !== '';
     }
     return false;
@@ -126,35 +139,36 @@ const QuizPage: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!quiz) return;
-
+  
     const submission: SubmissionPayload = {
       quizId: quiz.id,
       email,
-      userId: 0,
+      userId: 0, 
       submissionDate: new Date().toISOString(),
       answers: quiz.questions.map((question) => {
         const answer = answers[question.id] || [];
         return {
           questionId: question.id,
-          answerIds: question.type === 'textbox' ? [] : answer.map(Number),
-          text: question.type === 'textbox' ? answer[0] || '' : null,
+          answerIds: question.type === 'Textbox' ? [] : answer.map(Number),
+          text: question.type === 'Textbox' ? answer[0] || '' : null, 
         };
       }),
     };
-
+  
     try {
-      console.log('Submission payload:', JSON.stringify(submission, null, 2));
-      await axios.post('https://localhost:5001/api/quizzes/submit', submission);
+      console.log('Submission payload:', JSON.stringify(submission, null, 2)); 
+      const response = await axios.post('https://localhost:5001/api/quizzes/submit', submission);
+      console.log('Submission response:', response.data); 
       navigate('/highscores');
     } catch (error: any) {
-      console.error('Failed submission payload:', error.response?.data);
+      console.error('Failed submission payload:', error.response?.data); 
       alert('Failed to submit quiz. Please try again.');
     }
   };
 
   const renderQuestionType = (question: Question) => {
     switch (question.type) {
-      case 'radio':
+      case 'Radio':
         return (
           <RadioGroup 
             name={`question-${question.id}`} 
@@ -171,7 +185,7 @@ const QuizPage: React.FC = () => {
             ))}
           </RadioGroup>
         );
-      case 'checkbox':
+      case 'Checkbox':
         return question.answers.map((answer) => (
           <FormControlLabel 
             key={answer.id}
@@ -190,7 +204,7 @@ const QuizPage: React.FC = () => {
             label={answer.text} 
           />
         ));
-      case 'textbox':
+      case 'Textbox':
         return (
           <TextField 
             fullWidth 

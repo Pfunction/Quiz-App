@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using QuizApp.Data;
+using QuizApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register services
 builder.Services.AddControllers();
 builder.Services.AddDbContext<QuizContext>(options =>
     options.UseInMemoryDatabase("QuizDb"));
+
+builder.Services.AddScoped<IQuizService, QuizService>(); // Register the service
 
 builder.Services.AddCors(options =>
 {
@@ -17,7 +21,6 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowCredentials());
 });
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -32,13 +35,14 @@ builder.Services.AddLogging(configure =>
 
 var app = builder.Build();
 
-
+// DB
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<QuizContext>();
     context.Database.EnsureCreated(); 
 }
 
+//HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();

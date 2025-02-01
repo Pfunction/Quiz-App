@@ -23,16 +23,16 @@ namespace QuizApp.Data
             );
 
             modelBuilder.Entity<Question>().HasData(
-            new Question { Id = 1, QuizId = 1, Text = "What is 5 + 7?", Type = "radio" },
-            new Question { Id = 2, QuizId = 1, Text = "What is the capital city of France?", Type = "textbox" },
-            new Question { Id = 3, QuizId = 1, Text = "What is the result of 9 x 6?", Type = "radio" },
-            new Question { Id = 4, QuizId = 1, Text = "What is the longest river in the world?", Type = "radio" },
-            new Question { Id = 5, QuizId = 1, Text = "What is the square root of 144?", Type = "radio" },
-            new Question { Id = 6, QuizId = 1, Text = "Which of the following are continents? (Select all that apply)", Type = "checkbox" },
-            new Question { Id = 7, QuizId = 1, Text = "What is the value of π (Pi) to 3 decimal places?", Type = "textbox" },
-            new Question { Id = 8, QuizId = 1, Text = "Who invented the telephone?", Type = "radio" },
-            new Question { Id = 9, QuizId = 1, Text = "What is the sum of the angles in a triangle? (Type only the number)", Type = "textbox" },
-            new Question { Id = 10, QuizId = 1, Text = "Which country has the most official languages?", Type = "checkbox" }
+            new Question { Id = 1, QuizId = 1, Text = "What is 5 + 7?", Type = QuestionType.Radio },
+            new Question { Id = 2, QuizId = 1, Text = "What is the capital city of France?", Type = QuestionType.Textbox },
+            new Question { Id = 3, QuizId = 1, Text = "What is the result of 9 x 6?", Type = QuestionType.Radio },
+            new Question { Id = 4, QuizId = 1, Text = "What is the longest river in the world?", Type = QuestionType.Radio},
+            new Question { Id = 5, QuizId = 1, Text = "What is the square root of 144?", Type = QuestionType.Radio },
+            new Question { Id = 6, QuizId = 1, Text = "Which of the following are continents? (Select all that apply)", Type = QuestionType.Checkbox},
+            new Question { Id = 7, QuizId = 1, Text = "What is the value of π (Pi) to 3 decimal places?", Type = QuestionType.Textbox  },
+            new Question { Id = 8, QuizId = 1, Text = "Who invented the telephone?", Type = QuestionType.Radio },
+            new Question { Id = 9, QuizId = 1, Text = "What is the sum of the angles in a triangle? (Type only the number)", Type = QuestionType.Textbox  },
+            new Question { Id = 10, QuizId = 1, Text = "Which country has the most official languages?", Type = QuestionType.Checkbox}
         );
 
         modelBuilder.Entity<Answer>().HasData(
