@@ -15,11 +15,18 @@ import {
 const HighScoresPage = () => {
   const [highScores, setHighScores] = useState([]);
 
+
   useEffect(() => {
-    axios.get('https://localhost:5001/api/quizzes/highscores')
-      .then((response) => {
+    const fetchHighScores = async () => {
+      try {
+        const response = await axios.get('https://localhost:5001/api/quizzes/highscores');
         setHighScores(response.data);
-      });
+      } catch (error) {
+        console.error('Error fetching high scores:', error);
+      }
+    };
+
+    fetchHighScores();
   }, []);
 
   const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];

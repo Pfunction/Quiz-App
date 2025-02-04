@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { QuizService } from '../pages/services/api/quizService.ts';
+import { Quiz, Question } from './services/api/types';
 import QuizStepper from '../components/QuizStepper';
-
 import { 
   Container, 
   Paper, 
@@ -18,84 +17,96 @@ import {
   Divider
 } from '@mui/material';
 
-
-interface Answer {
-  id: number;
-  text: string;
-}
-
-interface Question {
-  id: number;
-  text: string;
-  type: 'Radio' | 'Checkbox' | 'Textbox';
-  answers: Answer[];
-}
-
-interface Quiz {
-  id: number;
-  title: string;
-  questions: Question[];
-}
-
-interface SubmissionPayload {
-  quizId: number;
-  email: string;
-  userId: number;
-  submissionDate: string;
-  answers: {
-    questionId: number;
-    answerIds: number[];
-    text: string | null;
-  }[];
-}
-
 const QuizPage: React.FC = () => {
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [email, setEmail] = useState<string>('');
   const [answers, setAnswers] = useState<Record<number, string[]>>({});
   const [currentPage, setCurrentPage] = useState<number>(-1);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   };
-  
 
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const response = await axios.get<Quiz[]>('https://localhost:5001/api/quizzes', { 
-          withCredentials: true, 
-          headers: { 'Content-Type': 'application/json' } 
-        });
-
-        console.log('Fetch Quiz Response:', response.data);
-        if (response.data.length > 0) {
-          setQuiz(response.data[0]);
+        setLoading(true);
+        const quizzes = await QuizService.fetchQuizzes();
+        if (quizzes.length > 0) {
+          setQuiz(quizzes[0]);
         } else {
-          console.error('No quizzes found');
+          setError('No quizzes available');
         }
       } catch (error) {
+        setError('Failed to load quiz. Please try again later.');
         console.error('Error fetching quizzes:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchQuiz();
   }, []);
 
+  const validateAnswer = useCallback((): boolean => {
+    const currentQuestion = quiz?.questions[currentPage];
+    if (!currentQuestion) return false;
+
+    const currentAnswer = answers[currentQuestion.id];
+    
+    if (currentQuestion.type === 'Radio') {
+      return currentAnswer && currentAnswer.length > 0;
+    }
+    if (currentQuestion.type === 'Checkbox') {
+      return currentAnswer && currentAnswer.length > 0;
+    }
+    if (currentQuestion.type === 'Textbox') {
+      return currentAnswer && currentAnswer[0].trim() !== '';
+    }
+    return false;
+  }, [quiz, currentPage, answers]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!quiz) return;
+
+    try {
+      const submission = {
+        quizId: quiz.id,
+        email,
+        userId: 0,
+        submissionDate: new Date().toISOString(),
+        answers: quiz.questions.map((question) => {
+          const answer = answers[question.id] || [];
+          return {
+            questionId: question.id,
+            answerIds: question.type === 'Textbox' ? [] : answer.map(Number),
+            text: question.type === 'Textbox' ? answer[0] || '' : null,
+          };
+        }),
+      };
+
+      await QuizService.submitQuiz(submission);
+      navigate('/highscores');
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('Failed to submit quiz. Please try again.');
+    }
+  }, [quiz, email, answers, navigate]);
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
-        e.preventDefault(); 
-  
-        if (currentPage === -1) {
+        e.preventDefault();
 
+        if (currentPage === -1) {
           if (email && isValidEmail(email)) {
-            setCurrentPage(0); 
+            setCurrentPage(0);
           }
         } else {
-        
           if (validateAnswer()) {
             if (currentPage < Math.ceil(quiz?.questions.length || 0) - 1) {
               setCurrentPage(prev => prev + 1);
@@ -108,62 +119,16 @@ const QuizPage: React.FC = () => {
         }
       }
     };
-  
+
     window.addEventListener('keydown', handleKeyPress);
-  
+
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [currentPage, quiz, answers, email]); 
+  }, [currentPage, quiz, answers, email, validateAnswer, handleSubmit]);
 
   const handleChange = (questionId: number, answer: string[]) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
-  };
-
-  const validateAnswer = (): boolean => {
-    const currentQuestion = quiz?.questions[currentPage];
-    if (!currentQuestion) return false;
-  
-    const currentAnswer = answers[currentQuestion.id];
-    if (currentQuestion.type === 'Radio') { 
-      return currentAnswer && currentAnswer.length > 0;
-    }
-    if (currentQuestion.type === 'Checkbox') { 
-      return currentAnswer && currentAnswer.length > 0;
-    }
-    if (currentQuestion.type === 'Textbox') {
-      return currentAnswer && currentAnswer[0].trim() !== '';
-    }
-    return false;
-  };
-
-  const handleSubmit = async () => {
-    if (!quiz) return;
-  
-    const submission: SubmissionPayload = {
-      quizId: quiz.id,
-      email,
-      userId: 0, 
-      submissionDate: new Date().toISOString(),
-      answers: quiz.questions.map((question) => {
-        const answer = answers[question.id] || [];
-        return {
-          questionId: question.id,
-          answerIds: question.type === 'Textbox' ? [] : answer.map(Number),
-          text: question.type === 'Textbox' ? answer[0] || '' : null, 
-        };
-      }),
-    };
-  
-    try {
-      console.log('Submission payload:', JSON.stringify(submission, null, 2)); 
-      const response = await axios.post('https://localhost:5001/api/quizzes/submit', submission);
-      console.log('Submission response:', response.data); 
-      navigate('/highscores');
-    } catch (error: any) {
-      console.error('Failed submission payload:', error.response?.data); 
-      alert('Failed to submit quiz. Please try again.');
-    }
   };
 
   const renderQuestionType = (question: Question) => {
@@ -185,6 +150,7 @@ const QuizPage: React.FC = () => {
             ))}
           </RadioGroup>
         );
+
       case 'Checkbox':
         return question.answers.map((answer) => (
           <FormControlLabel 
@@ -204,6 +170,7 @@ const QuizPage: React.FC = () => {
             label={answer.text} 
           />
         ));
+
       case 'Textbox':
         return (
           <TextField 
@@ -214,12 +181,31 @@ const QuizPage: React.FC = () => {
             onChange={(e) => handleChange(question.id, [e.target.value])}
           />
         );
+
       default:
         return null;
     }
   };
 
-  if (!quiz) return <Typography>Loading...</Typography>;
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Typography>Loading quiz...</Typography>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Typography color="error">{error}</Typography>
+      </Container>
+    );
+  }
+
+  if (!quiz) {
+    return null;
+  }
 
   const QUESTIONS_PER_PAGE = 1;
   const totalPages = Math.ceil(quiz.questions.length / QUESTIONS_PER_PAGE);
@@ -230,9 +216,12 @@ const QuizPage: React.FC = () => {
         <Paper elevation={3} sx={{ p: 4, mt: 4, textAlign: 'center' }}>
           <Typography variant="h3" gutterBottom>{quiz.title}</Typography>
           <Typography variant="body1" paragraph sx={{ mb: 3 }}>
-            Welcome to the quiz! This test consists of {quiz.questions.length} questions that test your general knowledge! Good luck!
+            Welcome to the quiz! This test consists of {quiz.questions.length} questions 
+            that test your general knowledge! Good luck!
           </Typography>
-                Type your Email to track your score.
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Type your Email to track your score.
+          </Typography>
           <TextField
             fullWidth
             label="Your Email"
@@ -293,15 +282,7 @@ const QuizPage: React.FC = () => {
             ))}
           </Box>
 
-          <Divider
-              sx={{
-                my: 3,
-                width: '0',
-                maxWidth: '300px', 
-                marginX: 'auto',
-              }}
-            />
-
+          <Divider sx={{ my: 3, width: '100%', maxWidth: '0px', marginX: 'auto' }} />
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button
@@ -334,7 +315,6 @@ const QuizPage: React.FC = () => {
           </Box>
         </Paper>
       </Container>
-  
 
       <QuizStepper currentPage={currentPage} totalPages={totalPages} />
     </Box>

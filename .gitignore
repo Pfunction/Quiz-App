@@ -1,12 +1,22 @@
+# Ignore nmodules and dependency files
+node_modules/
+quiz-app-frontend/node_modules/
+package-lock.json
+yarn.lock
 
+# Ignore build files
 bin/
 obj/
+*.dll
+*.exe
+*.pdb
+*.log
 
-*.user
-*.suo
+# Ignore config files
+appsettings.json
+appsettings.Development.json
 
-
-packages/
-
-
+# Ignore vs files
 .vs/
+*.suo
+*.user

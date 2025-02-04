@@ -2,15 +2,13 @@ import React from 'react';
 import { Box, Container, Stepper, Step, StepLabel } from '@mui/material';
 import CustomStepIcon from './CustomStepIcon';
 import { StepConnector } from '@mui/material';
-import { display, margin, styled } from '@mui/system';
+import { styled } from '@mui/system';
 
 const CustomConnector = styled(StepConnector)(({ theme }) => ({
   '& .MuiStepConnector-line': {
     borderColor: 'gray',
     borderWidth: 1,
-    marginTop: 2
-
-    
+    marginTop: 2,
   },
 }));
 
@@ -28,46 +26,27 @@ const QuizStepper = ({ currentPage, totalPages }) => {
     }}>
       <Container maxWidth="md">
 
-        <Box sx={{ 
-          display: { xs: 'none', md: 'block' }
-        }}>
-         <Stepper
-        activeStep={currentPage}
-        alternativeLabel
-        connector={<CustomConnector />}
-      >
-        {Array.from({ length: totalPages }).map((_, index) => (
-          <Step key={index}>
-            <StepLabel
-              StepIconComponent={(props) => (
-                <CustomStepIcon
-                  {...props}
-                  completed={currentPage > index}
+        {/* Desktop View */}
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Stepper activeStep={currentPage} alternativeLabel connector={<CustomConnector />}>
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <Step key={index}>
+                <StepLabel
+                  icon={<CustomStepIcon icon={index + 1} completed={currentPage > index} />} // Pass icon (step number)
+                  sx={{
+                    '& .MuiStepLabel-label': {
+                      display: 'none',
+                    },
+                  }}
                 />
-              )}
-              sx={{
-                '& .MuiStepLabel-label': {
-                  display: 'none',
-                },
-              }}
-            />
-          </Step>
-        ))}
-      </Stepper>
-
+              </Step>
+            ))}
+          </Stepper>
         </Box>
 
-
-        <Box sx={{ 
-          display: { xs: 'block', md: 'none' }
-        }}>
-          <Stepper 
-            activeStep={currentPage} 
-            alternativeLabel
-  
-           
-
-          >
+        {/* Mobile View */}
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+          <Stepper activeStep={currentPage} alternativeLabel>
             {(() => {
               let stepsToShow = [];
               if (currentPage === 0) {
@@ -81,15 +60,14 @@ const QuizStepper = ({ currentPage, totalPages }) => {
                 .filter(step => step >= 0 && step < totalPages)
                 .map((stepIndex) => (
                   <Step key={stepIndex}>
-                    <StepLabel 
-                      StepIconComponent={(props) => (
+                    <StepLabel
+                      icon={
                         <CustomStepIcon 
-                          {...props}
                           icon={stepIndex + 1}
                           active={currentPage === stepIndex}
                           completed={currentPage > stepIndex}
                         />
-                      )}
+                      }
                       sx={{
                         '& .MuiStepLabel-label': {
                           display: 'none'

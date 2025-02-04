@@ -44,3 +44,5 @@
 /Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 =======
 >>>>>>> Stashed changes
+/Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/package-lock.json
+/Users/pauliuspundzius/Documents/GitHub/Quiz-App/bin/Debug/net9.0/package.json
